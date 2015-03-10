@@ -2,19 +2,19 @@
 #include <stdio.h>
 #include <math.h>
 
-typedef struct particle_t {
+typedef struct vector_t {
   float x;
   float y;
   float z;
-} particle_t;
+} vector_t;
 
 typedef struct particle_container_t {
-  particle_t* particle_array;
+  vector_t* particle_array;
   size_t num_elements;
 } particle_container_t;
 
-particle_t create_particle(float x, float y, float z) {
-  particle_t p;
+vector_t create_particle(float x, float y, float z) {
+  vector_t p;
   p.x = x;
   p.y = y;
   p.z = z;
@@ -39,12 +39,12 @@ void set_initial_conditions(particle_container_t pc, size_t cube_length) {
 // Allocates cube_length^3 particles along the unit cube
 particle_container_t allocate_particles(size_t cube_length) {
   particle_container_t pc;
-  pc.particle_array = (particle_t *)malloc(sizeof(particle_t) * CUBED(cube_length));
+  pc.particle_array = (vector_t *)malloc(sizeof(vector_t) * CUBED(cube_length));
   pc.num_elements = CUBED(cube_length);
   return pc;
 }
 
-void save_particle_to_file(particle_t p, FILE* f) {
+void save_vector_to_file(vector_t p, FILE* f) {
   fprintf(f, "%f,%f,%f\n", p.x, p.y, p.z);
 }
 
@@ -52,7 +52,7 @@ void save_particles_to_file(particle_container_t pc, FILE* f) {
   fprintf(f, "x,y,z\n");
   int current_particle;
   for(current_particle = 0; current_particle < pc.num_elements; current_particle++) {
-    save_particle_to_file(pc.particle_array[current_particle], f);
+    save_vector_to_file(pc.particle_array[current_particle], f);
   }
 }
 
