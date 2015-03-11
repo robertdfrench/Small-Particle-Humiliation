@@ -71,10 +71,24 @@ config_t read_config(int argc, char** argv) {
 	return c;
 }
 
+void set_initial_velocities(vector_container_t vc) {
+	int current_vector;
+	vector_t one = unit_vector;
+	vector_t deltaX = scale_vector(0.01, one);
+	for(current_vector = 0; current_vector < vc.num_elements; current_vector++) {
+		vc.vector_array[current_vector] = deltaX;
+	}
+}
+
 int main(int argc, char** argv) {
 	config_t conf = read_config(argc, argv);
-	vector_container_t vc = allocate_vectors(conf.num_elements);
-	set_initial_positions(vc, conf.cube_size);
-	store_vector_container(vc, "initial_positions.csv");
+
+	vector_container_t positions = allocate_vectors(conf.num_elements);
+	set_initial_positions(positions, conf.cube_size);
+	store_vector_container(positions, "initial_positions.csv");
+
+	vector_container_t velocities = allocate_vectors(conf.num_elements);
+	set_initial_velocities(velocities);
+	store_vector_container(velocities, "initial_velocities.csv");
 	return 0;
 }
