@@ -100,6 +100,8 @@ void predict_positions(float timestep, vector_container_t predicted_positions, v
 	}
 }
 
+#define CUBE_LENGTH 10
+#define NUM_PARTICLES CUBE_LENGTH * CUBE_LENGTH * CUBE_LENGTH 
 int main(int argc, char** argv) {
 	config_t conf = read_config(argc, argv);
 
