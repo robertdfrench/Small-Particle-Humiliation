@@ -20,9 +20,10 @@ vector_t create_vector(float x, float y, float z) {
 	v.z = z;
 	return v;
 }
-#define zero_vector create_vector(0.0, 0.0, 0.0);
-#define unit_vector create_vector(1.0, 1.0, 1.0);
-#define scale_vector(a, v) create_vector(a * v.x, a * v.y, a * v.z);
+#define zero_vector create_vector(0.0, 0.0, 0.0)
+#define unit_vector create_vector(1.0, 1.0, 1.0)
+#define scale_vector(a, v) create_vector(a * v.x, a * v.y, a * v.z)
+#define add_vectors(v, w) create_vector(v.x + w.x, v.y + w.y, v.z + w.z)
 
 void write_vector(vector_t v, FILE* f) {
 	fprintf(f, "%f,%f,%f\n", v.x, v.y, v.z);
@@ -62,12 +63,14 @@ vector_container_t allocate_vectors(size_t num_elements) {
 typedef struct config_t {
 	int cube_size;
 	int num_elements;
+	float timestep;
 } config_t;
 
 config_t read_config(int argc, char** argv) {
 	config_t c;
 	c.cube_size = 10;
 	c.num_elements = 1000;
+	c.timestep = 1;
 	return c;
 }
 
@@ -77,6 +80,23 @@ void set_initial_velocities(vector_container_t vc) {
 	vector_t deltaX = scale_vector(0.01, one);
 	for(current_vector = 0; current_vector < vc.num_elements; current_vector++) {
 		vc.vector_array[current_vector] = deltaX;
+	}
+}
+
+void predict_positions(float timestep, vector_container_t predicted_positions, vector_container_t current_positions, vector_container_t current_velocities) {
+	int current_vector;
+	vector_t position;
+	vector_t velocity;
+	vector_t predicted_position;
+	vector_t change_in_position;
+	for(current_vector = 0; current_vector < predicted_positions.num_elements; current_vector++) {
+		position = current_positions.vector_array[current_vector];
+		velocity = current_velocities.vector_array[current_vector];
+
+		change_in_position = scale_vector(timestep, velocity);
+		predicted_position = add_vectors(position, change_in_position);
+
+		predicted_positions.vector_array[current_vector] = predicted_position;
 	}
 }
 
@@ -90,5 +110,9 @@ int main(int argc, char** argv) {
 	vector_container_t velocities = allocate_vectors(conf.num_elements);
 	set_initial_velocities(velocities);
 	store_vector_container(velocities, "initial_velocities.csv");
+
+	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
+	predict_positions(config.timestep, predicted_positions, positions, velocities);
+	store_vector_container(predicted_positions, "predicted_positions.csv");
 	return 0;
 }
