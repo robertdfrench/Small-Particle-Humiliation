@@ -25,6 +25,13 @@ vector_t create_vector(float x, float y, float z) {
 #define scale_vector(a, v) create_vector(a * v.x, a * v.y, a * v.z)
 #define add_vectors(v, w) create_vector(v.x + w.x, v.y + w.y, v.z + w.z)
 
+vector_t cross_product(vector_t u, vector_t v) {
+	float x = u.y * v.z - u.z * v.y;
+	float y = u.z * v.x - u.x * v.z;
+	float z = u.x * v.y - u.y * v.x;
+	return create_vector(x, y, z);
+}
+
 void write_vector(vector_t v, FILE* f) {
 	fprintf(f, "%f,%f,%f\n", v.x, v.y, v.z);
 }
@@ -114,7 +121,7 @@ int main(int argc, char** argv) {
 	store_vector_container(velocities, "initial_velocities.csv");
 
 	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
-	predict_positions(config.timestep, predicted_positions, positions, velocities);
+	predict_positions(conf.timestep, predicted_positions, positions, velocities);
 	store_vector_container(predicted_positions, "predicted_positions.csv");
 	return 0;
 }
