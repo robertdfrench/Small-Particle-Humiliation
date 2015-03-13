@@ -32,6 +32,14 @@ vector_t cross_product(vector_t u, vector_t v) {
 	return create_vector(x, y, z);
 }
 
+float dot_product(vector_t u, vector_t v) {
+	return u.x * v.x + u.y * v.y + u.z * v.z;
+}
+
+float vector_norm(vector_t u) {
+	return sqrt(dot_product(u,u));
+}
+
 void write_vector(vector_t v, FILE* f) {
 	fprintf(f, "%f,%f,%f\n", v.x, v.y, v.z);
 }
