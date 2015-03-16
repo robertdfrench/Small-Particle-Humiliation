@@ -24,6 +24,7 @@ vector_t create_vector(float x, float y, float z) {
 #define unit_vector create_vector(1.0, 1.0, 1.0)
 #define scale_vector(a, v) create_vector(a * v.x, a * v.y, a * v.z)
 #define add_vectors(v, w) create_vector(v.x + w.x, v.y + w.y, v.z + w.z)
+#define subtract_vectors(v, w) add_vectors(v, scale_vector(-1, w))
 
 vector_t cross_product(vector_t u, vector_t v) {
 	float x = u.y * v.z - u.z * v.y;
@@ -113,6 +114,29 @@ void predict_positions(float timestep, vector_container_t predicted_positions, v
 
 		predicted_positions.vector_array[current_vector] = predicted_position;
 	}
+}
+
+vector_t compute_location_vector(vector_t v) {
+	float norm = vector_norm(v);
+	return scale_vector(1.0/norm,v);
+}
+
+/* This comes from Mueller Equation 16 */
+vector_t calculate_vorticity(float epsilon, vector_t N, vector_t omega) {
+	vector_t n_cross_omega = cross_product(N, omega);
+	return scale_vector(epsilon, n_cross_omega);
+}
+
+float calculate_distance(vector_t u, vector_t v) {
+	return vector_norm(subtract_vectors(u,v));
+}
+
+float calculate_force(size_t i, vector_container_t positions) {
+	
+}
+
+void simulation_loop() {
+	
 }
 
 #define CUBE_LENGTH 10
