@@ -99,6 +99,17 @@ void set_initial_velocities(vector_container_t vc) {
 	}
 }
 
+void apply_forces(float timestep, vector_container_t velocities) {
+	size_t index;
+	for(index = 0; index < velocities.num_elements; index++) {
+		// Line 2: Apply Forces
+		vector_t vi = velocities.vector_array[i];
+		vector_t f = create_vector(0,0,-1 * GRAVITY * PARTICLE_MASS);
+		vector_t dt_times_f = scale_vector(timestep, f);
+		velocities.vector_array[i] = add_vectors(vi, dt_times_f);
+	}
+}
+
 void predict_positions(float timestep, vector_container_t predicted_positions, vector_container_t current_positions, vector_container_t current_velocities) {
 	int current_vector;
 	vector_t position;
@@ -131,12 +142,12 @@ float calculate_distance(vector_t u, vector_t v) {
 	return vector_norm(subtract_vectors(u,v));
 }
 
-float calculate_force(size_t i, vector_container_t positions) {
-	
-}
-
-void simulation_loop() {
-	
+#define GRAVITY 9.8
+#define PARTICLE_MASS 1.0
+void simulation_loop(config_t conf, vector_container_t positions, vector_container_t velocities) {
+	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
+	apply_forces(conf.timestep, velocities);
+	predict_positions(conf.timestep, predicted_positions, positions, velocities);
 }
 
 #define CUBE_LENGTH 10
