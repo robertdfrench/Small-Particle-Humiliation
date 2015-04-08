@@ -84,29 +84,31 @@ typedef struct config_t {
 
 config_t read_config(int argc, char** argv) {
 	config_t c;
-	c.cube_size = 10;
-	c.num_elements = 1000;
-	c.timestep = 1;
+	c.cube_size = 2;
+	c.num_elements = 8;
+	c.timestep = 0.1;
 	return c;
 }
 
 void set_initial_velocities(vector_container_t vc) {
 	int current_vector;
 	vector_t one = unit_vector;
-	vector_t deltaX = scale_vector(0.01, one);
+	vector_t deltaX = scale_vector(0.00, one);
 	for(current_vector = 0; current_vector < vc.num_elements; current_vector++) {
 		vc.vector_array[current_vector] = deltaX;
 	}
 }
 
+#define GRAVITY 9.8
+#define PARTICLE_MASS 1.0
 void apply_forces(float timestep, vector_container_t velocities) {
 	size_t index;
 	for(index = 0; index < velocities.num_elements; index++) {
 		// Line 2: Apply Forces
-		vector_t vi = velocities.vector_array[i];
+		vector_t vi = velocities.vector_array[index];
 		vector_t f = create_vector(0,0,-1 * GRAVITY * PARTICLE_MASS);
 		vector_t dt_times_f = scale_vector(timestep, f);
-		velocities.vector_array[i] = add_vectors(vi, dt_times_f);
+		velocities.vector_array[index] = add_vectors(vi, dt_times_f);
 	}
 }
 
@@ -142,16 +144,12 @@ float calculate_distance(vector_t u, vector_t v) {
 	return vector_norm(subtract_vectors(u,v));
 }
 
-#define GRAVITY 9.8
-#define PARTICLE_MASS 1.0
 void simulation_loop(config_t conf, vector_container_t positions, vector_container_t velocities) {
 	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
 	apply_forces(conf.timestep, velocities);
 	predict_positions(conf.timestep, predicted_positions, positions, velocities);
 }
 
-#define CUBE_LENGTH 10
-#define NUM_PARTICLES CUBE_LENGTH * CUBE_LENGTH * CUBE_LENGTH 
 int main(int argc, char** argv) {
 	config_t conf = read_config(argc, argv);
 
@@ -161,7 +159,8 @@ int main(int argc, char** argv) {
 
 	vector_container_t velocities = allocate_vectors(conf.num_elements);
 	set_initial_velocities(velocities);
-	store_vector_container(velocities, "initial_velocities.csv");
+
+  apply_forces(conf.timestep, velocities);
 
 	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
 	predict_positions(conf.timestep, predicted_positions, positions, velocities);
