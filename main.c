@@ -20,11 +20,21 @@ vector_t create_vector(float x, float y, float z) {
 	v.z = z;
 	return v;
 }
+
 #define zero_vector create_vector(0.0, 0.0, 0.0)
 #define unit_vector create_vector(1.0, 1.0, 1.0)
-#define scale_vector(a, v) create_vector(a * v.x, a * v.y, a * v.z)
-#define add_vectors(v, w) create_vector(v.x + w.x, v.y + w.y, v.z + w.z)
-#define subtract_vectors(v, w) add_vectors(v, scale_vector(-1, w))
+
+vector_t scale_vector(float a, vector_t v) {
+	return create_vector(a * v.x, a * v.y, a * v.z);
+}
+
+vector_t add_vectors(vector_t v, vector_t w) {
+	return create_vector(v.x + w.x, v.y + w.y, v.z + w.z);
+}
+
+vector_t subtract_vectors(vector_t v, vector_t w) {
+	return add_vectors(v, scale_vector(-1, w));
+}
 
 vector_t cross_product(vector_t u, vector_t v) {
 	float x = u.y * v.z - u.z * v.y;
