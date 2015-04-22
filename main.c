@@ -90,6 +90,7 @@ typedef struct config_t {
 	int cube_size;
 	int num_elements;
 	float timestep;
+	int solverIterations;
 } config_t;
 
 config_t read_config(int argc, char** argv) {
@@ -97,6 +98,7 @@ config_t read_config(int argc, char** argv) {
 	c.cube_size = 2;
 	c.num_elements = 8;
 	c.timestep = 0.1;
+	c.solverIterations = 100;
 	return c;
 }
 
@@ -154,10 +156,77 @@ float calculate_distance(vector_t u, vector_t v) {
 	return vector_norm(subtract_vectors(u,v));
 }
 
+// Equation 21 from Muller, Charypar, and Gross 2003
+#define PI 3.1415
+float W_spiky(vector_t r, float h) {
+	float r_norm = vector_norm(r);
+	if (0 <= r_norm && r_norm <= h) {
+		float h_to_the_6th = h * h * h * h * h * h;
+		float coefficient = 15.0 / (PI * h_to_the_6th);
+
+		float diff = h - r_norm;
+		float diff_cubed = diff * diff * diff;
+	
+		return coefficient * diff_cubed;
+	} else {
+		return 0.0;
+	}
+}
+
+float W_poly6(vector_t r, float h) {
+	float r_norm = vector_norm(r);
+	if (0 <= r_norm && r_norm <= h) {
+		float h_to_the_9th = h * h * h * h * h * h * h * h * h;
+		float coefficient = 315.0 / (64.0 * PI * h_to_the_9th);
+		
+		float diff = (h * h) - (r_norm * r_norm);
+		float diff_cubed = diff * diff * diff;
+
+		return coefficient * diff_cubed;
+	} else {
+		return 0.0;
+	}
+}
+
+float calculate_rho(size_t i, float h, vector_container_t positions) {
+	float rho = 0.0;
+	vector_t pi = positions.vector_array[i];
+	int j = 0;
+	for(j = 0; j < positions.num_elements; j++) {
+		vector_t pj = positions.vector_array[j];
+		rho += W(vector_subtract(pi, pj), h);
+	}
+	return rho;
+}
+
+# define rho_0 1.0
+float calculate_constraints(size_t i, float h, vector_container_t positions) {
+	float rho_i = calculate_rho(i, h, positions);
+	return rho_i / rho_0 - 1.0;
+}
+
+void calculate_lambdas(float* lambdas, vector_container_t positions, vector_container_t predicted_positions, config_t conf) {
+	int i = 0;
+	for(i = 0; i < conf.num_elements; i++) {
+		float numerator = calculate_constraints(i, conf.timestep, positions);
+		float denominator = 1.0;
+		lambdas[i] = - numerator / denominator;
+	}
+}
+
 void simulation_loop(config_t conf, vector_container_t positions, vector_container_t velocities) {
 	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
+
+	// Line 2
 	apply_forces(conf.timestep, velocities);
+	// Line 3
 	predict_positions(conf.timestep, predicted_positions, positions, velocities);
+
+	int i = 0;
+	float* lambdas = (float*)malloc(sizeof(float) * conf.num_elements);
+	for(i = 0; i < conf.solverIterations; i++) {
+		calculate_lambas(lambdas, positions, predicted_positions, conf);
+	}
 }
 
 int main(int argc, char** argv) {
@@ -170,7 +239,7 @@ int main(int argc, char** argv) {
 	vector_container_t velocities = allocate_vectors(conf.num_elements);
 	set_initial_velocities(velocities);
 
-  apply_forces(conf.timestep, velocities);
+	apply_forces(conf.timestep, velocities);
 
 	vector_container_t predicted_positions = allocate_vectors(conf.num_elements);
 	predict_positions(conf.timestep, predicted_positions, positions, velocities);
