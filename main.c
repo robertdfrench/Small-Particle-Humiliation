@@ -173,6 +173,7 @@ float W_spiky(vector_t r, float h) {
 	}
 }
 
+// Equation 21 from Muller, Charypar, and Gross 2003
 float W_poly6(vector_t r, float h) {
 	float r_norm = vector_norm(r);
 	if (0 <= r_norm && r_norm <= h) {
@@ -194,7 +195,7 @@ float calculate_rho(size_t i, float h, vector_container_t positions) {
 	int j = 0;
 	for(j = 0; j < positions.num_elements; j++) {
 		vector_t pj = positions.vector_array[j];
-		rho += W(vector_subtract(pi, pj), h);
+		rho += W_poly6(vector_subtract(pi, pj), h);
 	}
 	return rho;
 }
